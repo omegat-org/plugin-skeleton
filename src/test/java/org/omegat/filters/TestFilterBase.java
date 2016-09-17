@@ -25,7 +25,6 @@
 
 package org.omegat.filters;
 
-import org.omegat.core.data.IProject;
 import org.omegat.core.data.ProtectedPart;
 import org.omegat.filters2.FilterContext;
 import org.omegat.filters2.IAlignCallback;
@@ -47,7 +46,6 @@ import java.util.Map;
 import com.alibaba.fastjson.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.testng.annotations.BeforeClass;
 
 import static org.testng.Assert.*;
 
@@ -64,10 +62,9 @@ abstract class TestFilterBase  {
     protected File outFile;
 
     protected void test(final IFilter filter, final String testcase) throws Exception {
-        translateText(filter, testcase + ".txt");
-        List<String> entries = parse(filter, testcase + ".txt");
+        List<String> entries = parse(filter, "/" + testcase + ".txt");
         try (BufferedReader reader = getBufferedReader(new
-                        File(this.getClass().getResource(testcase + ".json").getFile()),
+                        File(this.getClass().getResource("/" + testcase + ".json").getFile()),
                 "UTF-8")) {
             String jsonString = IOUtils.toString(reader);
             ArrayList expected = JSON.parseObject(jsonString, ArrayList.class);
@@ -76,7 +73,7 @@ abstract class TestFilterBase  {
     }
 
     protected void testTranslate(final IFilter filter, final String testcase) throws Exception {
-        translateText(filter, testcase + ".txt");
+        translateText(filter, "/" + testcase + ".txt");
     }
 
     protected List<String> parse(IFilter filter, String resource) throws Exception {
@@ -95,13 +92,6 @@ abstract class TestFilterBase  {
 
             public void addEntry(String id, String source, String translation, boolean isFuzzy, String comment,
                                  String path, IFilter filter, List<ProtectedPart> protectedParts) {
-                String[] props = comment == null ? null : new String[] { "comment", comment };
-                addEntryWithProperties(id, source, translation, isFuzzy, props, path, filter, protectedParts);
-            }
-
-            public void addEntryWithProperties(String id, String source, String translation,
-                                               boolean isFuzzy, String[] props, String path,
-                                               IFilter filter, List<ProtectedPart> protectedParts) {
                 if (!source.isEmpty()) {
                     result.add(source);
                 }
@@ -114,15 +104,12 @@ abstract class TestFilterBase  {
         return result;
     }
 
-
     protected void translate(IFilter filter, String resource) throws Exception {
         translate(filter, resource, Collections.emptyMap());
     }
     
     protected void translate(IFilter filter, String resource, Map<String, String> config) throws Exception {
-        File testDir = new File("build/tmp/OmegaT_test-" + getClass().getName());
-        testDir.mkdir();
-        outFile = File.createTempFile("output", ".txt", testDir);
+        outFile = File.createTempFile("output", ".txt");
         outFile.deleteOnExit();
         filter.translateFile(new File(this.getClass().getResource(resource).getFile()), outFile, config, context,
                 new ITranslateCallback() {
@@ -143,20 +130,21 @@ abstract class TestFilterBase  {
     }
 
     protected void align(IFilter filter, String in, String out, IAlignCallback callback) throws Exception {
-        File inFile = new File("test/data/filters/" + in);
-        File outFile = new File("test/data/filters/" + out);
+        File inFile = new File("/data/filters/" + in);
+        File outFile = new File("/data/filters/" + out);
         filter.alignFile(inFile, outFile, Collections.emptyMap(), context, callback);
     }
 
-    protected void translateText(IFilter filter, String filename) throws Exception {
-        translateText(filter, filename, Collections.emptyMap());
+    protected void translateText(IFilter filter, String resource) throws Exception {
+        translateText(filter, resource, Collections.emptyMap());
     }
 
     protected void translateText(IFilter filter, String resource, Map<String, String> config) throws Exception {
         translate(filter, resource, config);
         FileUtils.contentEquals(new File(this.getClass().getResource(resource).getFile()), outFile);
     }
-        /**
+
+    /**
      * Create BufferedReader from specified file and encoding.
      *
      * @param inFile file to read.

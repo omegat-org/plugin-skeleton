@@ -27,57 +27,57 @@
 package org.omegat.filters;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.junit.Test;
-import org.omegat.core.data.IProject;
 import org.omegat.filters2.text.dokuwiki.DokuWikiFilter;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 public class DokuWikiFilterTest extends TestFilterBase {
 
     @Test
     public void testTextFilterParsing() throws Exception {
-        List<String> entries = parse(new DokuWikiFilter(), "test/data/filters/dokuwiki/dokuwiki.txt");
-        int i = 0;
-        assertEquals("Header", entries.get(i++));
-        assertEquals("This is a flow text.", entries.get(i++));
-        assertEquals("multiple spaces in text", entries.get(i++));
-        assertEquals("* asterisk * asterisk", entries.get(i++));
-        assertEquals("list item", entries.get(i++));
-        assertEquals("- minus - minus", entries.get(i++));
-        assertEquals("numeric item", entries.get(i++));
-        assertEquals("before code", entries.get(i++));
-        assertEquals("mid code", entries.get(i++));
-        assertEquals("after code", entries.get(i++));
-        assertEquals("<del>deleted</del>", entries.get(i++));
-        assertEquals("header", entries.get(i++));
-        assertEquals("cell1", entries.get(i++));
-        assertEquals("cell2", entries.get(i++));
-        assertEquals("cell3 {{..:images:f_n_16.png|Number}}", entries.get(i++));
+        List<String> expected = new ArrayList<>();
+        expected.add("Header");
+        expected.add("This is a flow text.");
+        expected.add("multiple spaces in text");
+        expected.add("* asterisk * asterisk");
+        expected.add("list item");
+        expected.add("- minus - minus");
+        expected.add("numeric item");
+        expected.add("before code");
+        expected.add("mid code");
+        expected.add("after code");
+        expected.add("<del>deleted</del>");
+        expected.add("header");
+        expected.add("cell1");
+        expected.add("cell2");
+        expected.add("cell3 {{..:images:f_n_16.png|Number}}");
+        List<String> entries = parse(new DokuWikiFilter(), "/dokuwiki.txt");
+        assertEquals(entries, expected);
     }
 
     @Test
     public void testTranslate() throws Exception {
-        translateText(new DokuWikiFilter(), "test/data/filters/dokuwiki/dokuwiki-translate.txt");
+        translateText(new DokuWikiFilter(), "/dokuwiki-translate.txt");
     }
 
     @Test
     public void testIsFileSupported() {
         DokuWikiFilter filter = new DokuWikiFilter();
-        assertTrue(filter.isFileSupported(new File("test/data/filters/dokuwiki/dokuwiki.txt"),
-                new TreeMap<String, String>(), context));
-        assertFalse(filter.isFileSupported(new File("test/data/filters/text/text1.txt"),
-                new TreeMap<String, String>(), context));
+        assertTrue(filter.isFileSupported(new File(this.getClass().getResource("/dokuwiki.txt").getFile()),
+                new TreeMap<>(), context));
+        assertFalse(filter.isFileSupported(new File(this.getClass().getResource("/text1.txt").getFile()),
+                new TreeMap<>(), context));
     }
 
+    @Test
     public void testLoad() throws Exception {
-        String f = "test/data/filters/dokuwiki/dokuwiki.txt";
-        IProject.FileInfo fi = loadSourceFiles(new DokuWikiFilter(), f);
-
-        checkMultiStart(fi, f);
-        checkMulti("Header", null, null, "", "This is a flow text.", null);
-        checkMulti("This is a flow text.", null, null, "Header", "multiple spaces in text", null);
-        checkMulti("multiple spaces in text", null, null, "This is a flow text.", "* asterisk * asterisk", null);
+        test(new DokuWikiFilter(), "dokuwiki");
     }
 }
