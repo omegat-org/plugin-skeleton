@@ -38,4 +38,12 @@ public class Instance implements Serializable {
     public Instance(String sourceFilenameMask) {
     }
 
+    public Instance(String sourceFilenameMask, String sourceEncoding, String targetEncoding) {
+    }
+
+    public Instance(String sourceFilenameMask, String sourceEncoding, String targetEncoding,
+            String targetFilenamePattern) {
+    }
+
+
 }
