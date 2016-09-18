@@ -4,7 +4,7 @@
 
 - A location of source: src/main/java/\*
 - Project name in settings.gradle
-- Plugin Manifest description in property.gradle
+- Plugin Manifest description in gradle.properties.
 - Test code: src/test/java/\* and src/test/resources/\*
 - Integration test code: src/integration-test/java/\* and src/integration-test/resources/\*
 - Coding rules: config/checkstyle/checkstyle.xml and config/checkstyle/header.txt

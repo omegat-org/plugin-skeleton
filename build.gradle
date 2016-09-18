@@ -64,7 +64,7 @@ jar {
         exclude "META-INF/MANIFEST.MF"
     }
     manifest {
-        attributes("OmegaT-Plugins": "org.omegat.")
+        attributes("OmegaT-Plugins": pluginMainClass)
     }
 }
 
