@@ -33,20 +33,25 @@ sourceSets {
 }
 
 repositories {
+    maven {
+        url "https://dl.bintray.com/miurahr/maven/"
+    }
     jcenter()
 }
 
 dependencies {
     provided 'commons-io:commons-io:2.4'
     provided 'commons-lang:commons-lang:2.6'
-    provided project(":stub")
-    testCompile 'org.testng:testng:6.9.10'
-    testCompile 'com.alibaba:fastjson:1.2.17'
-    testCompile project(":stub")
+    provided 'org.omegat.gradle:gradle-omegat-plugin:0.9.0'
+    testCompile 'org.omegat.gradle:gradle-omegat-plugin:0.9.0'
+    testCompile 'junit:junit:4.12'
+    testCompile 'xmlunit:xmlunit:1.6'
+    testCompile 'org.madlonkay.supertmxmerge:supertmxmerge:2.0.1'
+    integrationTestCompile 'org.omegat.gradle:gradle-omegat-plugin:0.9.0'
     integrationTestCompile 'org.testng:testng:6.9.10'
-    integrationTestCompile project(":stub")
+    integrationTestCompile 'com.alibaba:fastjson:1.2.17'
 }
-test.useTestNG()
+//test.useTestNG()
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
@@ -129,9 +134,5 @@ distributions {
             }
         }
     }
-}
-
-project(":stub") {
-    apply plugin: 'java'
 }
 
