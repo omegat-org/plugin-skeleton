@@ -1,4 +1,4 @@
-# OmegaT plugin development skelton
+# OmegaT plugin development skeleton
 
 ## Where you should change?
 
@@ -11,7 +11,7 @@
 
 ## Build system
 
-This skelton use Gralde for build system as same as OmegaT version 4.0 and later.
+This skeleton use Gralde for build system as same as OmegaT version 4.0 and later.
 
 ## Dependency
 
@@ -27,7 +27,7 @@ It is nessesary to connect the internet at least first time to compile.
 
 ## FatJar
 
-OmegaT considered a plugin is a single jar file. If it is depend on some library, you should ship your plugin with these library. It is why skelton generate FatJar, single jar with all runtime dependencies without provided by OmegaT distribution.
+OmegaT considered a plugin is a single jar file. If it is depend on some library, you should ship your plugin with these library. It is why skeleton generate FatJar, single jar with all runtime dependencies without provided by OmegaT distribution.
 
 ## Where is a built artifact?
 
