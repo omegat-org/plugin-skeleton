@@ -69,13 +69,18 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
 }
 
-// build FatJar
+// Build FatJar
+//
+// It is easy to install a 3rd-party OmegaT plugin which is
+// a single jar file, because all user should do is just to put the jar
+// file into plugins directory.
 jar {
     from files(sourceSets.main.output.classesDir)
     from {configurations.compile.collect {zipTree(it)}} {
         exclude "META-INF/MANIFEST.MF"
     }
     manifest {
+        // plugin's main class name is defined in gradle.properties file.
         attributes("OmegaT-Plugins": pluginMainClass)
     }
 }
@@ -93,6 +98,7 @@ task checkstyleIntegrationTest(overwrite: true) << {}
 task findbugsTest(overwrite: true) << {}
 task findbugsIntegrationTest(overwrite: true) << {}
 
+// Treat findbugs failure as warning
 findbugs {
     ignoreFailures = true
 }
@@ -114,6 +120,7 @@ check.dependsOn integrationTest
 integrationTest.mustRunAfter test
 tasks.integrationTest.setGroup('Verification')
 
+// Hack for IntelliJ IDEA 
 idea {
     module {
         testSourceDirs += file('src/integration-test/java')
