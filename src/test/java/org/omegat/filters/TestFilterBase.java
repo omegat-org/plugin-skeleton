@@ -245,7 +245,10 @@ abstract class TestFilterBase {
 
     protected void translateText(IFilter filter, String resource, Map<String, String> config) throws Exception {
         translate(filter, resource, config);
-        FileUtils.contentEquals(new File(this.getClass().getResource(resource).getFile()), outFile);
+        boolean result = FileUtils.contentEquals(new File(this.getClass().getResource(resource).getFile()), outFile);
+        if (!result) {
+          fails("Translated text, which should be as same as source one, is not equals with source.");
+        }
     }
 
     protected void translateXML(AbstractFilter filter, String filename) throws Exception {
