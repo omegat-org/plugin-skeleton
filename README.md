@@ -1,5 +1,21 @@
 # OmegaT plugin development skeleton
 
+## How to get skeleton into your project
+
+It is recommended to checkout a squashed history of skeleton.
+
+```
+$ mkdir myproject; cd myproject
+$ git init
+$ git remote add skeleton https://github.com/omegat-org/plugin-skeleton.git
+$ git fetch skeleton
+$ git checkout -b master skeleton/squashed
+$ git remote remove skeleton
+$ git remote add origin https://where.your/project/repository
+$ git push -u origin master
+```
+
+
 ## Where you should change?
 
 - Source code: `src/main/java/*`
@@ -12,7 +28,7 @@
 
 ## Build system
 
-This skeleton use Gralde for build system as same as OmegaT version 4.0 and later.
+This skeleton use a Gradle build system as same as OmegaT version 4.0.0 and later.
 
 ## Dependency
 
@@ -22,15 +38,15 @@ It is nessesary to connect the internet at least first time to compile.
 ## Extensions from Gradle defaults
 
 - Integration test support.
-- `Provided` configuration for OmegaT classes and libraries that is bundled with OmegaT.
+- `provided` configuration for OmegaT classes and libraries that is bundled with OmegaT.
 - Static code verification with Checkstyle and FindBugs.
 - FatJar generation.
 
 ## FatJar
 
-OmegaT considered a plugin is a single jar file. If it is depend on some library, 
-you should ship your plugin with these library.
-It is why generating FatJar, single jar with all runtime dependencies
+OmegaT considered a plugin is a single jar file. If it is depend on some libraries, 
+you should ship your plugin with these libraries.
+It is why generating a FatJar, a single jar file with all runtime dependencies
 which is not provided with OmegaT.
 
 ## Where is a built artifact?
@@ -40,11 +56,11 @@ Also you can find jar files at `build/libs/`
 
 ## Test report
 
-You can see test result report at `build/reports/` with your favorit web browser.
+You will find a test results report at `build/reports/` and can show it with your favorite web browser.
 
-## Install
+## Installation
 
-Please download zip file from Github release. You can get jar file from zip distribution.
+You can get a plugin jar file from zip/tgz distribution file.
 OmegaT plugin should be placed in `$HOME/.omegat/plugin` or `C:\Program Files\OmegaT\plugin`
 depending on your operating system.
 
