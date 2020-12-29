@@ -1,55 +1,28 @@
-apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'checkstyle'
-apply plugin: 'distribution'
-apply plugin: 'maven'
-apply plugin: 'groovy'
+plugins {
+    id('java')
+    id('jacoco')
+    id('checkstyle')
+    id('distribution')
+    id('maven')
+    id('groovy')
+    id('org.omegat.gradle') version '1.2.4'
+}
 
 version = '0.1'
 
-configurations {
-    provided
-}
-
-sourceSets {
-    main {
-        compileClasspath += configurations.provided
-        test.compileClasspath += configurations.provided
-        test.runtimeClasspath += configurations.provided
-    }
-}
-
-repositories {
-    maven {
-        url "https://dl.bintray.com/omegat-org/maven"
-    }
-    jcenter()
+omegat {
+    version = "5.2.0"
+    pluginClass = pluginMainClass
 }
 
 dependencies {
-    compile  'org.slf4j:slf4j-api:1.7.21'
-    provided 'org.omegat:omegat:5.2.0'
-    provided 'commons-io:commons-io:2.4'
-    provided 'commons-lang:commons-lang:2.6'
-    provided 'org.slf4j:slf4j-nop:1.7.21'
-    testCompile 'junit:junit:4.12'
-    testCompile 'xmlunit:xmlunit:1.6'
-    testCompile 'org.madlonkay.supertmxmerge:supertmxmerge:2.0.1'
-}
-
-// Build FatJar
-//
-// It is easy to install a 3rd-party OmegaT plugin which is
-// a single jar file, because all user should do is just to put the jar
-// file into plugins directory.
-jar {
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } } {
-        exclude "META-INF/MANIFEST.MF"
-    }
-    manifest {
-        // plugin's main class name is defined in gradle.properties file.
-        attributes("OmegaT-Plugins": pluginMainClass)
-    }
+    packIntoJar  'org.slf4j:slf4j-api:1.7.21'
+    implementation 'commons-io:commons-io:2.5'
+    implementation 'commons-lang:commons-lang:2.6'
+    implementation 'org.slf4j:slf4j-nop:1.7.21'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'xmlunit:xmlunit:1.6'
+    testImplementation 'org.madlonkay.supertmxmerge:supertmxmerge:2.0.1'
 }
 
 checkstyle {
@@ -61,16 +34,13 @@ tasks.checkstyleMain.setGroup('Verification')
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = 'sources'
 }
 
 javadoc {
-    classpath += configurations.provided
     options.locale = 'en_US'
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -94,9 +64,7 @@ distributions {
             from(sourceJar) {
                 into 'source'
             }
-            from(jar) {
-                into 'plugin'
-            }
+            from(jar)
         }
     }
 }
