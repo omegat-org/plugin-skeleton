@@ -23,8 +23,6 @@ version = '0.1'
 
 configurations {
     provided
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
 }
 
 sourceSets {
@@ -32,15 +30,6 @@ sourceSets {
         compileClasspath += configurations.provided
         test.compileClasspath += configurations.provided
         test.runtimeClasspath += configurations.provided
-    }
-
-    integrationTest {
-        compileClasspath += main.output + test.output + configurations.provided
-        runtimeClasspath += main.output + test.output + configurations.provided
-        java {
-            srcDir file('src/integration-test/java')
-        }
-        resources.srcDir file('src/integration-test/resources')
     }
 }
 
@@ -60,10 +49,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'xmlunit:xmlunit:1.6'
     testCompile 'org.madlonkay.supertmxmerge:supertmxmerge:2.0.1'
-    integrationTestCompile 'org.testng:testng:6.9.10'
-    integrationTestCompile 'com.alibaba:fastjson:1.2.17'
 }
-//test.useTestNG()
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
@@ -108,23 +94,6 @@ tasks.withType(FindBugs) {
       html.enabled = true
     }
     setGroup('Verification')
-}
-
-task integrationTest(type: Test) {
-    description = "Integration/Acceptance Test"
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    useTestNG()
-}
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
-tasks.integrationTest.setGroup('Verification')
-
-// Hack for IntelliJ IDEA 
-idea {
-    module {
-        testSourceDirs += file('src/integration-test/java')
-    }
 }
 
 task sourceJar(type: Jar) {
