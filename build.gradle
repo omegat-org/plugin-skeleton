@@ -26,45 +26,15 @@ dependencies {
 }
 
 checkstyle {
-    config = resources.text.fromFile("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     ignoreFailures = true
     toolVersion = '7.1'
-}
-tasks.checkstyleMain.setGroup('Verification')
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-}
-
-javadoc {
-    options.locale = 'en_US'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives jar
-    archives sourceJar
-    archives javadocJar
-}
-
-distTar {
-  compression = Compression.GZIP
 }
 
 distributions {
     main {
         contents {
-            from('README.md', 'COPYING')
-            into('docs') {
-                from 'CHANGELOG.md'
-            }
-            from(sourceJar) {
-                into 'source'
-            }
             from(jar)
+            from('README.md', 'COPYING', 'CHANGELOG.md')
         }
     }
 }
