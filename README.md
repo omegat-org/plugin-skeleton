@@ -22,9 +22,7 @@ $ git push -u origin master
 - Test code: `src/test/java/*` and `src/test/resources/*`
 - Project name in `settings.gradle`
 - Plugin Main class name in``gradle.properties`.
-- Integration test code: `src/integration-test/java/*` and `src/integration-test/resources/*`
 - Coding rules: `config/checkstyle/checkstyle.xml
-- Source file Header rule: `config/checkstyle/header.txt`
 
 ## Build system
 
@@ -53,6 +51,11 @@ Also you can find jar files at `build/libs/`
 ## Test report
 
 You will find a test results report at `build/reports/` and can show it with your favorite web browser.
+
+## Github actions
+
+There is an example script to use Github Actions for CI/CD.
+
 
 ## Installation
 
