@@ -1,11 +1,11 @@
 /**************************************************************************
- OmegaT - Computer Assisted Translation (CAT) tool 
-          with fuzzy matching, translation memory, keyword search, 
+ OmegaT - Computer Assisted Translation (CAT) tool
+          with fuzzy matching, translation memory, keyword search,
           glossaries, and translation leveraging into updated projects.
 
  Copyright (C) 2008 Alex Buloichik
                Home page: http://www.omegat.org/
-               Support center: http://groups.yahoo.com/group/OmegaT/
+               Support center: https://omegat.org/support
 
  This file is part of OmegaT.
 
@@ -25,17 +25,13 @@
 
 package org.omegat.filters;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +43,21 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.FileUtils;
+import org.custommonkey.xmlunit.XMLAssert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.omegat.core.Core;
+import org.omegat.core.TestCore;
 import org.omegat.core.data.EntryKey;
+import org.omegat.core.data.ExternalTMX;
 import org.omegat.core.data.IProject;
+import org.omegat.core.data.IProject.FileInfo;
 import org.omegat.core.data.ProjectProperties;
 import org.omegat.core.data.ProtectedPart;
 import org.omegat.core.data.RealProject;
+import org.omegat.core.data.SegmentProperties;
 import org.omegat.core.data.SourceTextEntry;
 import org.omegat.filters2.AbstractFilter;
 import org.omegat.filters2.FilterContext;
@@ -68,48 +73,57 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
-import org.apache.commons.io.FileUtils;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 /**
- * Base class for test filter parsing.
- * 
+ * Base class for testing filter parsing.
+ *
  * @author Alex Buloichik <alex73mail@gmail.com>
- * @author Hiroshi Miura
  */
-abstract class TestFilterBase {
-
+public abstract class TestFilterBase extends TestCore {
     protected FilterContext context = new FilterContext(new Language("en"), new Language("be"), false)
             .setTargetTokenizerClass(DefaultTokenizer.class);
 
     protected File outFile;
 
-    protected void setUp() throws Exception {
+    @Rule
+    public TestName name = new TestName();
+
+    @Before
+    public final void setUpFilterBase() throws Exception {
         Core.initializeConsole(Collections.emptyMap());
         Core.setFilterMaster(new FilterMaster(FilterMaster.createDefaultFiltersConfig()));
         Core.setProject(new TestProject(new ProjectPropertiesTest()));
+
+        outFile = new File("build/testdata/OmegaT_test-" + getClass().getName() + "-" + name.getMethodName());
+        outFile.getParentFile().mkdirs();
     }
 
-    protected List<String> parse(IFilter filter, String resource) throws Exception {
-        return parse(filter, resource, Collections.emptyMap());
-    }
+    /**
+     * Helper function for testing the parseFile method of a given filter without options;
+     * returns a list of source segments that the
+     * filter-under-test finds in the given file and returns to the IParseCallback.addEntry method.
+     * NB: Id, comments, fuzzyness, path, properties etc is all ignored.
+     *
+     * @param filter   the filter to test
+     * @param filename the file to use as input for the filter
+     * @return list of source segments
+     * @throws Exception when the filter throws an exception on parseFile.
+     */
+    protected List<String> parse(AbstractFilter filter, String filename) throws Exception {
+        final List<String> result = new ArrayList<String>();
 
-    protected List<String> parse(IFilter filter, String resource, Map<String, String> options)
-            throws Exception {
-        final List<String> result = new ArrayList<>();
-
-        filter.parseFile(new File(this.getClass().getResource(resource).getFile()), options, context, new IParseCallback() {
+        filter.parseFile(new File(filename), Collections.emptyMap(), context, new IParseCallback() {
             public void addEntry(String id, String source, String translation, boolean isFuzzy,
-                    String comment, IFilter filter) {
+                                 String comment, IFilter filter) {
                 addEntry(id, source, translation, isFuzzy, comment, null, filter, null);
             }
 
             public void addEntry(String id, String source, String translation, boolean isFuzzy, String comment,
                                  String path, IFilter filter, List<ProtectedPart> protectedParts) {
-                String[] props = comment == null ? null : new String[] { "comment", comment };
+                String[] props = comment == null ? null : new String[]{SegmentProperties.COMMENT, comment};
                 addEntryWithProperties(id, source, translation, isFuzzy, props, path, filter, protectedParts);
             }
 
@@ -128,6 +142,64 @@ abstract class TestFilterBase {
         return result;
     }
 
+    /**
+     * Helper function for testing the parseFile method of a given filter using some options;
+     * returns a list of source segments that
+     * the filter-under-test finds in the given file and returns to the IParseCallback.addEntry method.
+     * NB: Id, comments, fuzzyness, path, properties etc is all ignored.
+     *
+     * @param filter   the filter to test
+     * @param filename the file to use as input for the filter
+     * @param options  the filter options/config to use
+     * @return list of source segments
+     * @throws Exception when the filter throws an exception on parseFile.
+     */
+    protected List<String> parse(AbstractFilter filter, String filename, Map<String, String> options)
+            throws Exception {
+        final List<String> result = new ArrayList<String>();
+
+        filter.parseFile(new File(filename), options, context, new IParseCallback() {
+            public void addEntry(String id, String source, String translation, boolean isFuzzy,
+                                 String comment, IFilter filter) {
+                addEntry(id, source, translation, isFuzzy, comment, null, filter, null);
+            }
+
+            public void addEntry(String id, String source, String translation, boolean isFuzzy, String comment,
+                                 String path, IFilter filter, List<ProtectedPart> protectedParts) {
+                String[] props = comment == null ? null : new String[]{SegmentProperties.COMMENT, comment};
+                addEntryWithProperties(id, source, translation, isFuzzy, props, path, filter, protectedParts);
+            }
+
+            public void addEntryWithProperties(String id, String source, String translation,
+                                               boolean isFuzzy, String[] props, String path,
+                                               IFilter filter, List<ProtectedPart> protectedParts) {
+                if (!source.isEmpty()) {
+                    result.add(source);
+                }
+            }
+
+            public void linkPrevNextSegments() {
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Helper function for testing the parseFile method of a given filter without options.
+     * The given 'result' map is filled with
+     * key=source, value=translation as the filter-under-test finds in the given file and returns to the
+     * IParseCallback.addEntry method, if the translation is not fuzzy.
+     * The given legacyTMX map is filled too, but also including fuzzy translations,
+     * where <code>key=[&lt;fuzzyMark&gt;] source</code>
+     * NB: Id, comments, path, properties etc is all ignored.
+     *
+     * @param filter    the filter to test
+     * @param filename  the file to use as input for the filter
+     * @param result    a map to fill by the filter with key=source, value=translation
+     * @param legacyTMX a map to fill by the filter with key=source or key=[&lt;fuzzyMark&gt;] source, value=translation
+     * @throws Exception when the filter throws an exception on parseFile.
+     */
     protected void parse2(final AbstractFilter filter, final String filename,
                           final Map<String, String> result, final Map<String, String> legacyTMX) throws Exception {
 
@@ -139,7 +211,7 @@ abstract class TestFilterBase {
 
             public void addEntry(String id, String source, String translation, boolean isFuzzy, String comment,
                                  String path, IFilter filter, List<ProtectedPart> protectedParts) {
-                String[] props = comment == null ? null : new String[] { "comment", comment };
+                String[] props = comment == null ? null : new String[]{SegmentProperties.COMMENT, comment};
                 addEntryWithProperties(id, source, translation, isFuzzy, props, path, filter, protectedParts);
             }
 
@@ -165,18 +237,30 @@ abstract class TestFilterBase {
         });
     }
 
+    /**
+     * Helper function for testing the parseFile method of a given filter using some options;
+     * returns a list of ParsedEntry with the
+     * attributes that the filter-under-test finds in the given file and returns to the IParseCallback.addEntry method.
+     *
+     * @param filter   the filter to test
+     * @param filename the file to use as input for the filter
+     * @param options  the filter options/config to use
+     * @return list of found information
+     * @throws Exception when the filter throws an exception on parseFile.
+     */
     protected List<ParsedEntry> parse3(AbstractFilter filter, String filename, Map<String, String> options)
             throws Exception {
-        final List<ParsedEntry> result = new ArrayList<ParsedEntry>();
+        final List<ParsedEntry> result = new ArrayList<>();
 
         filter.parseFile(new File(filename), options, context, new IParseCallback() {
             public void addEntry(String id, String source, String translation, boolean isFuzzy,
                                  String comment, IFilter filter) {
                 addEntry(id, source, translation, isFuzzy, comment, null, filter, null);
             }
+
             public void addEntry(String id, String source, String translation, boolean isFuzzy,
                                  String comment, String path, IFilter filter, List<ProtectedPart> protectedParts) {
-                String[] props = comment == null ? null : new String[] { "comment", comment };
+                String[] props = comment == null ? null : new String[]{SegmentProperties.COMMENT, comment};
                 addEntryWithProperties(id, source, translation, isFuzzy, props, path, filter, protectedParts);
             }
 
@@ -204,14 +288,29 @@ abstract class TestFilterBase {
         return result;
     }
 
-    protected void translate(IFilter filter, String resource) throws Exception {
-        translate(filter, resource, Collections.emptyMap());
+    /**
+     * Helper function for testing the translateFile method of a filter. Translation equals the source.
+     * Translation is written to {@link #outFile}.
+     *
+     * @param filter   the filter to test
+     * @param filename the file to use as input for the filter
+     * @throws Exception when the filter throws an exception
+     */
+    protected void translate(AbstractFilter filter, String filename) throws Exception {
+        translate(filter, filename, Collections.emptyMap());
     }
-    
-    protected void translate(IFilter filter, String resource, Map<String, String> config) throws Exception {
-        outFile = File.createTempFile("output", ".txt");
-        outFile.deleteOnExit();
-        filter.translateFile(new File(this.getClass().getResource(resource).getFile()), outFile, config, context,
+
+    /**
+     * Helper function for testing the translateFile method of a filter. Translation equals the source.
+     * Translation is written to {@link #outFile}.
+     *
+     * @param filter   the filter to test
+     * @param filename the file to use as input for the filter
+     * @param config   the filter options/config to use
+     * @throws Exception when the filter throws an exception
+     */
+    protected void translate(AbstractFilter filter, String filename, Map<String, String> config) throws Exception {
+        filter.translateFile(new File(filename), outFile, config, context,
                 new ITranslateCallback() {
                     public String getTranslation(String id, String source, String path) {
                         return source;
@@ -230,27 +329,46 @@ abstract class TestFilterBase {
     }
 
     protected void align(IFilter filter, String in, String out, IAlignCallback callback) throws Exception {
-        File inFile = new File("/data/filters/" + in);
-        File outFile = new File("/data/filters/" + out);
+        File inFile = new File("test/data/filters/" + in);
+        File outFile = new File("test/data/filters/" + out);
         filter.alignFile(inFile, outFile, Collections.emptyMap(), context, callback);
     }
 
-    protected void testTranslate(final IFilter filter, final String testcase) throws Exception {
-        translateText(filter, "/" + testcase + ".txt");
+    /**
+     * Asserts if the filter translateFile method produces a binary identical file from the given file, when no
+     * filter options/config given.
+     *
+     * @param filter   The filter to test
+     * @param filename the file to translate during the test
+     * @throws Exception when the filter throws an exception.
+     */
+    protected void translateText(AbstractFilter filter, String filename) throws Exception {
+        translateText(filter, filename, Collections.emptyMap());
     }
 
-    protected void translateText(IFilter filter, String resource) throws Exception {
-        translateText(filter, resource, Collections.emptyMap());
+    /**
+     * Asserts if the filter translateFile method produces a binary identical file from the given file under the given
+     * filter options/config.
+     *
+     * @param filter   The filter to test
+     * @param filename the file to translate during the test
+     * @param config   the filter options/config
+     * @throws Exception when the filter throws an exception.
+     */
+
+    protected void translateText(AbstractFilter filter, String filename, Map<String, String> config) throws Exception {
+        translate(filter, filename, config);
+        compareBinary(new File(filename), outFile);
     }
 
-    protected void translateText(IFilter filter, String resource, Map<String, String> config) throws Exception {
-        translate(filter, resource, config);
-        boolean result = FileUtils.contentEquals(new File(this.getClass().getResource(resource).getFile()), outFile);
-        if (!result) {
-          fails("Translated text, which should be as same as source one, is not equals with source.");
-        }
-    }
-
+    /**
+     * Tests if the filter translateFile method produces an identical XML file from the given file, when no
+     * filter options/config given.
+     *
+     * @param filter   The filter to test
+     * @param filename the file to translate during the test
+     * @throws Exception when the filter throws an exception.
+     */
     protected void translateXML(AbstractFilter filter, String filename) throws Exception {
         translate(filter, filename);
         compareXML(new File(filename), outFile);
@@ -301,7 +419,7 @@ abstract class TestFilterBase {
         n = (Node) exprTool.evaluate(doc2, XPathConstants.NODE);
         n.setNodeValue("");
 
-        assertXMLEqual(doc1, doc2);
+        XMLAssert.assertXMLEqual(doc1, doc2);
     }
 
     protected void compareXML(File f1, File f2) throws Exception {
@@ -309,7 +427,7 @@ abstract class TestFilterBase {
     }
 
     protected void compareXML(URL f1, URL f2) throws Exception {
-        assertXMLEqual(new InputSource(f1.toExternalForm()), new InputSource(f2.toExternalForm()));
+        XMLAssert.assertXMLEqual(new InputSource(f1.toExternalForm()), new InputSource(f2.toExternalForm()));
     }
 
     protected static class ParsedEntry {
@@ -321,15 +439,14 @@ abstract class TestFilterBase {
         String path;
     }
 
-    protected IProject.FileInfo loadSourceFiles(IFilter filter, String resource, Map<String, String> filterOptions)
+    protected TestFileInfo loadSourceFiles(IFilter filter, String file, Map<String, String> filterOptions)
             throws Exception {
         ProjectPropertiesTest props = new ProjectPropertiesTest();
         TestProject p = new TestProject(props);
-        String file = this.getClass().getResource(resource).getFile();
         return p.loadSourceFiles(filter, file, filterOptions);
     }
 
-    protected IProject.FileInfo loadSourceFiles(IFilter filter, String file) throws Exception {
+    protected TestFileInfo loadSourceFiles(IFilter filter, String file) throws Exception {
         return loadSourceFiles(filter, file, Collections.emptyMap());
     }
 
@@ -366,7 +483,7 @@ abstract class TestFilterBase {
         assertEquals(props.length, actual.length);
         for (int i = 0; i < actual.length; i += 2) {
             int keyIndex = expected.indexOf(actual[i]);
-            assertFalse(keyIndex == -1);
+            assertNotEquals(keyIndex, -1);
             int valIndex = expected.indexOf(actual[i + 1]);
             assertEquals(keyIndex + 1, valIndex);
         }
@@ -406,15 +523,17 @@ abstract class TestFilterBase {
             super(props);
         }
 
-        public FileInfo loadSourceFiles(IFilter filter, String file, Map<String, String> filterOptions) throws Exception {
+        public TestFileInfo loadSourceFiles(IFilter filter, String file, Map<String, String> filterOptions)
+                throws Exception {
             Core.setProject(this);
 
             Set<String> existSource = new HashSet<String>();
             Set<EntryKey> existKeys = new HashSet<EntryKey>();
+            Map<String, ExternalTMX> transMemories = new HashMap<>();
 
-            LoadFilesCallback loadFilesCallback = new LoadFilesCallback(existSource, existKeys);
+            LoadFilesCallback loadFilesCallback = new LoadFilesCallback(existSource, existKeys, transMemories);
 
-            FileInfo fi = new FileInfo();
+            TestFileInfo fi = new TestFileInfo();
             fi.filePath = file;
 
             loadFilesCallback.setCurrentFile(fi);
@@ -422,6 +541,10 @@ abstract class TestFilterBase {
             filter.parseFile(new File(file), filterOptions, context, loadFilesCallback);
 
             loadFilesCallback.fileFinished();
+
+            if (!transMemories.isEmpty()) {
+                fi.referenceEntries = transMemories.values().iterator().next();
+            }
 
             return fi;
         }
@@ -449,7 +572,7 @@ abstract class TestFilterBase {
     }
 
     protected void checkAlignById(String id, String source, String translation, String path) {
-        for(AlignedEntry en:al) {
+        for (AlignedEntry en : al) {
             if (id.equals(en.id)) {
                 assertEquals(source, en.source);
                 assertEquals(translation, en.translation);
@@ -482,23 +605,7 @@ abstract class TestFilterBase {
         public String path;
     }
 
-    /**
-     * Create BufferedReader from specified file and encoding.
-     *
-     * @param inFile file to read.
-     * @param inEncoding file encoding.
-     * @return BufferReader object.
-     * @throws IOException when file I/O error happened.
-     */
-    protected static BufferedReader getBufferedReader(final File inFile, final String inEncoding)
-            throws IOException {
-        InputStreamReader isr;
-        if (inEncoding == null) {
-            isr = new InputStreamReader(new FileInputStream(inFile), Charset.defaultCharset());
-        } else {
-            isr = new InputStreamReader(new FileInputStream(inFile), inEncoding);
-        }
-        return new BufferedReader(isr);
+    public static class TestFileInfo extends FileInfo {
+        public ExternalTMX referenceEntries;
     }
-
 }
