@@ -35,12 +35,8 @@ This skeleton use a Gradle build system as same as OmegaT version 4.0.0 and late
 OmegaT and dependencies are located on remote maven repositories.
 It is nessesary to connect the internet at least first time to compile.
 
-## Extensions from Gradle defaults
+Current skeleton refers OmegaT 5.2.0.
 
-- Integration test support.
-- `provided` configuration for OmegaT classes and libraries that is bundled with OmegaT.
-- Static code verification with Checkstyle and FindBugs.
-- FatJar generation.
 
 ## FatJar
 
