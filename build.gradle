@@ -5,7 +5,7 @@ plugins {
     id('distribution')
     id('maven')
     id('groovy')
-    id('org.omegat.gradle') version '1.2.4'
+    id('org.omegat.gradle') version '1.2.5'
 }
 
 version = '0.1'
