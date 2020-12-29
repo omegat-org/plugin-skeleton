@@ -25,14 +25,9 @@
 
 package org.omegat.filters;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -247,7 +242,7 @@ abstract class TestFilterBase {
         translate(filter, resource, config);
         boolean result = FileUtils.contentEquals(new File(this.getClass().getResource(resource).getFile()), outFile);
         if (!result) {
-          fails("Translated text, which should be as same as source one, is not equals with source.");
+          fail("Translated text, which should be as same as source one, is not equals with source.");
         }
     }
 
@@ -480,25 +475,6 @@ abstract class TestFilterBase {
         public String source;
         public String translation;
         public String path;
-    }
-
-    /**
-     * Create BufferedReader from specified file and encoding.
-     *
-     * @param inFile file to read.
-     * @param inEncoding file encoding.
-     * @return BufferReader object.
-     * @throws IOException when file I/O error happened.
-     */
-    protected static BufferedReader getBufferedReader(final File inFile, final String inEncoding)
-            throws IOException {
-        InputStreamReader isr;
-        if (inEncoding == null) {
-            isr = new InputStreamReader(new FileInputStream(inFile), Charset.defaultCharset());
-        } else {
-            isr = new InputStreamReader(new FileInputStream(inFile), inEncoding);
-        }
-        return new BufferedReader(isr);
     }
 
 }
