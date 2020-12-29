@@ -1,12 +1,12 @@
 /**************************************************************************
- OmegaT - Computer Assisted Translation (CAT) tool 
-          with fuzzy matching, translation memory, keyword search, 
+ OmegaT - Computer Assisted Translation (CAT) tool
+          with fuzzy matching, translation memory, keyword search,
           glossaries, and translation leveraging into updated projects.
 
  Copyright (C) 2008 Alex Buloichik
                2010 Volker Berlin
                Home page: http://www.omegat.org/
-               Support center: http://groups.yahoo.com/group/OmegaT/
+               Support center: https://omegat.org/support
 
  This file is part of OmegaT.
 
@@ -26,6 +26,10 @@
 
 package org.omegat.filters;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.List;
 import java.util.TreeMap;
@@ -34,13 +38,11 @@ import org.junit.Test;
 import org.omegat.core.data.IProject;
 import org.omegat.filters2.text.dokuwiki.DokuWikiFilter;
 
-import static org.junit.Assert.*;
-
 public class DokuWikiFilterTest extends TestFilterBase {
 
     @Test
     public void testTextFilterParsing() throws Exception {
-        List<String> entries = parse(new DokuWikiFilter(), "/filters/dokuwiki/dokuwiki.txt");
+        List<String> entries = parse(new DokuWikiFilter(), this.getClass().getResource("/test/data/filters/dokuwiki/dokuwiki.txt").getFile());
         int i = 0;
         assertEquals("Header", entries.get(i++));
         assertEquals("This is a flow text.", entries.get(i++));
@@ -61,20 +63,21 @@ public class DokuWikiFilterTest extends TestFilterBase {
 
     @Test
     public void testTranslate() throws Exception {
-        translateText(new DokuWikiFilter(), "/filters/dokuwiki/dokuwiki-translate.txt");
+        translateText(new DokuWikiFilter(), this.getClass().getResource("/test/data/filters/dokuwiki/dokuwiki-translate.txt").getFile());
     }
 
     @Test
     public void testIsFileSupported() {
         DokuWikiFilter filter = new DokuWikiFilter();
-        assertTrue(filter.isFileSupported(new File(this.getClass().getResource("/filters/dokuwiki/dokuwiki.txt").getFile()),
+        assertTrue(filter.isFileSupported(new File(this.getClass().getResource("/test/data/filters/dokuwiki/dokuwiki.txt").getFile()),
                 new TreeMap<String, String>(), context));
-        assertFalse(filter.isFileSupported(new File(this.getClass().getResource("/filters/text/text1.txt").getFile()),
+        assertFalse(filter.isFileSupported(new File(this.getClass().getResource("/test/data/filters/text/text1.txt").getFile()),
                 new TreeMap<String, String>(), context));
     }
 
+    @Test
     public void testLoad() throws Exception {
-        String f = "/filters/dokuwiki/dokuwiki.txt";
+        String f = this.getClass().getResource("/test/data/filters/dokuwiki/dokuwiki.txt").getFile();
         IProject.FileInfo fi = loadSourceFiles(new DokuWikiFilter(), f);
 
         checkMultiStart(fi, f);
@@ -82,4 +85,5 @@ public class DokuWikiFilterTest extends TestFilterBase {
         checkMulti("This is a flow text.", null, null, "Header", "multiple spaces in text", null);
         checkMulti("multiple spaces in text", null, null, "This is a flow text.", "* asterisk * asterisk", null);
     }
+
 }

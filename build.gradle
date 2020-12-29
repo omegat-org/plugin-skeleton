@@ -42,7 +42,7 @@ repositories {
 
 dependencies {
     compile  'org.slf4j:slf4j-api:1.7.21'
-    provided 'org.omegat:omegat:4.0.1'
+    provided 'org.omegat:omegat:5.2.0'
     provided 'commons-io:commons-io:2.4'
     provided 'commons-lang:commons-lang:2.6'
     provided 'org.slf4j:slf4j-nop:1.7.21'
