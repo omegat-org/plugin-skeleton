@@ -20,8 +20,8 @@ Here is a hint for modifications.
 - Source code: `src/main/java/*`
 - Test code: `src/test/java/*` and `src/test/resources/*`
 - Project name in `settings.gradle`
-- Plugin Main class name in``build.gradle.kts`.
-- Coding rules: `config/checkstyle/checkstyle.xml
+- Plugin Main class name in `build.gradle.kts`.
+- Coding rules: `config/checkstyle/checkstyle.xml`
 
 ## Build system
 
