@@ -2,8 +2,10 @@
 
 ## How to get skeleton into your project
 
-It is recommend to use `Use template` button on upper-right side of github project page,
+It is recommend to use `Use this template` button on upper-right side of github project page,
 to create your project repository.
+
+![](https://docs.github.com/assets/images/help/repository/use-this-template-button.png)
 
 ## Gradle DSL
 
