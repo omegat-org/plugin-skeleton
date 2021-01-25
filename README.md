@@ -30,7 +30,7 @@ This skeleton use a Gradle build system as same as OmegaT version 4.0.0 and late
 ## Dependency
 
 OmegaT and dependencies are located on remote maven repositories.
-It is nessesary to connect the internet to compile your project.
+It is necessary to connect the internet to compile your project.
 
 Current skeleton refers OmegaT 5.2.0.
 
@@ -64,7 +64,7 @@ There is an example script to use Github Actions for CI/CD.
 
 ## Installation
 
-You can get a plugin jar file from zip/tgz distribution file.
+You can get a plugin jar file from zip distribution file.
 OmegaT plugin should be placed in `$HOME/.omegat/plugin` or `C:\Program Files\OmegaT\plugin`
 depending on your operating system.
 

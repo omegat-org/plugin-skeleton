@@ -5,7 +5,7 @@ plugins {
     checkstyle
     distribution
     maven
-    id("org.omegat.gradle") version "1.3.2"
+    id("org.omegat.gradle") version "1.4.2"
 }
 
 version = "0.0.1"
@@ -20,7 +20,6 @@ dependencies {
     implementation("commons-io:commons-io:2.5")
     implementation("commons-lang:commons-lang:2.6")
     implementation("org.slf4j:slf4j-nop:1.7.21")
-    testImplementation("org.omegat:vldocking:3.0.5")
     testImplementation("junit:junit:4.12")
     testImplementation("xmlunit:xmlunit:1.6")
     testImplementation("org.madlonkay.supertmxmerge:supertmxmerge:2.0.1")
