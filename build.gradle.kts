@@ -34,7 +34,7 @@ checkstyle {
 distributions {
     main {
         contents {
-            from("README.md", "COPYING", "CHANGELOG.md")
+            from(tasks["jar"], "README.md", "COPYING", "CHANGELOG.md")
         }
     }
 }
